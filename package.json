@@ -1,0 +1,17 @@
+{
+  "name": "lambda-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.249.1",
+    "axios": "^0.18.0",
+    "lodash": "^4.17.10",
+    "twitter": "^1.7.1"
+  }
+}
