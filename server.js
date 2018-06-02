@@ -1,11 +1,15 @@
 const express = require('express')
 const app = express()
 const _ = require('lodash')
+const cors = require('cors');
 const m_client = require('mongodb').MongoClient;
 // load our local .env file for development
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').load();
 }
+
+// enable cors because I'm testing locally and on codepen
+app.use(cors())
 
 const PORT = process.env.PORT || 5000
 // connect to the mongodb instance
