@@ -29,15 +29,23 @@ m_client.connect(process.env.MONGO_URL, (e, c) => {
     if(tweets.length){
       let bulk = db.initializeUnorderedBulkOp()
     for(let t of tweets){
-      bulk.find({_id: t._id}).upsert().updateOne(t)
+      bulk.find({tweet_id: t.tweet_id}).upsert().updateOne(t)
     }
     bulk.execute()
+    console.log('finished writing to db')
     }
     }).then(() => {
-      db.remove({timestamp: {$gt: 1000*60*60*24*7}}).then((res) => {
+      let cutoff = new Date()
+      cutoff.setDate(cutoff.getDate() - 7)
+      let cutoffISO = cutoff.toISOString()
+      db.remove({timestamp: {$lt: new Date(cutoffISO)}}).then((res) => {
         console.log('finished cleaning out old tweets', res)
+        c.close()
       })
-    }).catch((e) => {console.log('ERROR WHILE UPDATING DB', e)}).then(() => {c.close()})
+    }).catch((e) => {
+      c.close()
+      console.log('ERROR WHILE UPDATING DB', e)
+    })
 
 
   
@@ -48,6 +56,7 @@ let date_comp = (a,b) => {return a.timestamp>b.timestamp ? -1 : a.time<b.time ? 
 
 function mapToObjects(tweets){
   // pull url, timestamp and id if the url exists
-  return tweets.map((t) => {return {_id: t.id, timestamp: new Date(t.created_at), user_id: t.user.id, user_name: t.user.name}})
+  console.log(tweets.map(t => t.id_str))
+  return tweets.map((t) => {return {tweet_id:t.id_str, timestamp: new Date(t.created_at), user_id: t.user.id_str, user_name: t.user.name}})
 }
 
