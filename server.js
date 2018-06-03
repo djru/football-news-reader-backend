@@ -23,10 +23,9 @@ m_client.connect(process.env.MONGO_URL, (e, c) => {
     // this is the main route for the api
     app.get('/tweets', (req, res) => {
         let page = req.query.page ? Number(req.query.page) : 1
-        let size = req.query.size ? Number(req.query.size) : 10
-        let limit = size * page
         // fetch tweets and handle pagination
-        let tweets = db.find({timestamp: {$gte: (new Date(new Date() - 1000*60*60*24))}}).sort({timestamp: -1}).limit(page * size).skip((page-1)*size).toArray().then((data) => {
+        console.log(page)
+        let tweets = db.find({timestamp: {$gte: (new Date(new Date() - 1000*60*60*24))}}).sort({timestamp: -1}).skip((page-1)*3).limit(3).toArray().then((data) => {
             console.log(data)
             res.send(data)
         }) 
