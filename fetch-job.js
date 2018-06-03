@@ -16,33 +16,32 @@ const twitter_creds = {
 var t_client = new twitter(twitter_creds);
 
 
-t_client.get('lists/statuses', {list_id: process.env.TWITTER_LIST_ID, include_entities: true, count: 10}).then((data) => {
-
-  // filter and compress mapped objects from tweet data
-  console.log('about to filter and compress')
-  let tweets =  _.compact(mapToObjects(data)).sort(date_comp)
-
-  console.log('about to write ' + tweets.length + ' tweets to db ' + process.env.MONGO_COLLECTION)
-  if(tweets.length){
     // Use connect method to connect to the server
 m_client.connect(process.env.MONGO_URL, (e, c) => {
   console.log("Connected successfully to server");
   const db = c.db(process.env.MONGO_COLLECTION).collection('tweets')
-  let bulk = db.initializeUnorderedBulkOp()
-  for(let t of tweets){
-    bulk.find({_id: t._id}).upsert().updateOne(t)
-  }
-  bulk.execute().then((res) => {
-    console.log('finished bulk insert', res)
-    c.close()
-  }).catch((e) => {
-    console.log('ERROR EXECUTING BULK', e)
-    c.close
-  })
+    t_client.get('lists/statuses', {list_id: process.env.TWITTER_LIST_ID, include_entities: true, count: 10}).then((data) => {
+      // filter and compress mapped objects from tweet data
+    console.log('about to filter and compress')
+    let tweets =  _.compact(mapToObjects(data)).sort(date_comp)
+  
+    console.log('about to write ' + tweets.length + ' tweets to db ' + process.env.MONGO_COLLECTION)
+    if(tweets.length){
+      let bulk = db.initializeUnorderedBulkOp()
+    for(let t of tweets){
+      bulk.find({_id: t._id}).upsert().updateOne(t)
+    }
+    bulk.execute()
+    }
+    }).then(() => {
+      db.remove({timestamp: {$gt: 1000*60*60*24*7}}).then((res) => {
+        console.log('finished cleaning out old tweets', res)
+      })
+    }).catch((e) => {console.log('ERROR WHILE UPDATING DB', e)}).then(() => {c.close()})
+
+
   
 })
-  }
-}).catch((e) => {console.log('ERROR: ', e)})
 
 
 let date_comp = (a,b) => {return a.timestamp>b.timestamp ? -1 : a.time<b.time ? 1 : 0}
