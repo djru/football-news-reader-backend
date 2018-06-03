@@ -32,6 +32,14 @@ m_client.connect(process.env.MONGO_URL, (e, c) => {
         }) 
     })
 
+    // this is the main route for the api
+    app.get('/users', (req, res) => {
+      let tweets = db.distinct('user_name').then((data) => {
+          console.log(data)
+          res.send(data)
+      }) 
+  })
+
 
     app.get('/', (req, res) => {res.redirect('/ping')})
     app.get('/ping', (req, res) => {res.send('pong')})
